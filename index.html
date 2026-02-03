@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autoevaluación de Equipos de Diseño</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Estilos Base */
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+
+        /* Tarjetas */
+        .card { 
+            background: white; 
+            border-radius: 16px; 
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border-color: #cbd5e1; }
+        
+        /* Indicador lateral de color */
+        .card-accent { position: absolute; top: 0; bottom: 0; left: 0; width: 4px; background-color: #cbd5e1; }
+
+        /* Botones de Opción */
+        .option-btn {
+            background: #f8fafc;
+            border: 2px solid transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-btn:hover { background: #fff; border-color: #94a3b8; transform: translateX(2px); }
+        .option-btn.selected { 
+            background: #eff6ff; 
+            border-color: #3b82f6; 
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        .option-btn.selected .indicator { background: #2563eb; color: white; border-color: #2563eb; }
+
+        /* Pestañas */
+        .tab-btn {
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 999px;
+            color: #64748b;
+            transition: all 0.2s;
+            background: #f1f5f9;
+        }
+        .tab-btn.active { background: #1e293b; color: white; }
+        
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        @media print {
+            .no-print { display: none !important; }
+            .card { break-inside: avoid; border: 1px solid #ccc; box-shadow: none; }
+        }
+    </style>
+</head>
+<body class="pb-32">
+
+    <div class="relative h-80 bg-cover bg-center flex items-center justify-center"
+         style="background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');">
+         <div class="absolute inset-0 bg-slate-900/70 backdrop-blur-[2px]"></div>
+        
+        <div class="relative z-10 text-center px-4 max-w-4xl text-white">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-xs font-bold tracking-widest uppercase mb-4">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Herramienta v2.0
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight leading-tight font-display">
+                Autoevaluación de <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Innovación</span>
+            </h1>
+            <p class="text-lg text-slate-300 font-light max-w-2xl mx-auto">
+                Mide el desempeño de tu equipo en procesos de Diseño Centrado en las Personas.
+            </p>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 -mt-10 relative z-20 flex flex-col lg:flex-row gap-8">
+        
+        <div class="w-full lg:w-2/3 space-y-6" id="app-container">
+            <div class="text-center py-20 bg-white rounded-xl shadow-sm border border-slate-200">
+                <p class="text-slate-400">Cargando evaluación...</p>
+            </div>
+        </div>
+
+        <div class="w-full lg:w-1/3">
+            <div class="sticky top-6 space-y-6">
+                
+                <div class="bg-white rounded-2xl p-6 shadow-xl border border-white/50 backdrop-blur-xl">
+                    <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2 font-display">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg>
+                        Diagnóstico
+                    </h2>
+                    
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <div class="bg-slate-50 p-4 rounded-xl text-center border border-slate-100">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total</div>
+                            <div id="total-score" class="text-3xl font-extrabold text-blue-600 font-display">0</div>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-xl text-center border border-slate-100">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Progreso</div>
+                            <div id="progress-text" class="text-3xl font-extrabold text-emerald-500 font-display">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="relative w-full h-64 mb-4">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 no-print">
+                    <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl font-bold text-sm transition shadow-lg flex justify-center items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        Guardar PDF
+                    </button>
+                    <button onclick="resetApp()" class="bg-white border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 py-3 rounded-xl font-bold text-sm transition flex justify-center items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        Reiniciar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DATOS EXTRAÍDOS DEL NUEVO ARCHIVO (46 Items)
+        const data = [
+            { "id": 1, "category": "MÈTODOS DE RECOLECCION", "title": "TIPOS DE REGISTROS", "options": [ { "val": 0, "label": "No hay Registros", "desc": "" }, { "val": 1, "label": "Nivel Básico", "desc": "Se Registra Bitácora y Encuestas" }, { "val": 2, "label": "Nivel Satisfactorio", "desc": "Se Registra Con fotos, Bitácora, Encuestas" }, { "val": 3, "label": "Nivel Excelente", "desc": "Se registran Videos/Fotos, Audios, Bitácora, Encuestas, etc." } ] },
+            { "id": 2, "category": "CONOCER LA ORGANIZACIÒN", "title": "ESCUCHA ACTIVA + ENTREVISTA", "options": [ { "val": 0, "label": "No se produce", "desc": "" }, { "val": 1, "label": "Nivel Básico", "desc": "Escucha (guiada por preguntas cerradas y pre-establecidas) en ocasiones interrumpe o completa las frases." }, { "val": 2, "label": "Nivel Medio", "desc": "Escucha y realiza preguntas abiertas, no interrumpe." }, { "val": 3, "label": "Nivel avanzado", "desc": "Escucha con preguntas abiertas, no interrumpe, registra los gestos (verbales y no verbales) y las emociones de la persona. Invita a la persona a relatar una historia." } ] },
+            { "id": 3, "category": "IDENTIFICAR ACTORES", "title": "IDENTIFICACIÓN DE ACTORES", "options": [ { "val": 0, "label": "No se identifican", "desc": "" }, { "val": 1, "label": "Mínima", "desc": "Se identifica el equipo de diseño y algún actor principal ( para quien se diseña), con el cual se toma contacto o se identifican varios actores pero no se toma contacto." }, { "val": 2, "label": "Satisfactoria", "desc": "Se identifica el equipo de diseño y varios actores clave y se toma contacto." }, { "val": 3, "label": "Completa", "desc": "Se identifica el equipo de diseño, los actores clave de la organización y beneficiarios/usuarios, se toma contacto con ellos." } ] },
+            { "id": 4, "category": "ACOMPAÑAMIENTO CONTEXTUAL", "title": "OBSERVACIÓN EN CONTEXTO", "options": [ { "val": 0, "label": "No se observa", "desc": "" }, { "val": 1, "label": "Observación no relevante", "desc": "Se acompaña en contexto y se registra lo que sucede en un día atípico o sin actividades habituales." }, { "val": 2, "label": "Observación Profunda", "desc": "Se acompaña en contexto y se registra lo que dice en un día con actividad habitual" }, { "val": 3, "label": "Observación profunda e iterativa", "desc": "Registran comportamientos espontáneos, no solo lo que dice, en días con actividades habituales y lo realiza de manera iterativa." } ] },
+            { "id": 5, "category": "CO-DISEÑO INICIAL", "title": "TÈCNICAS PROYECTIVAS Y CREATIVAS", "options": [ { "val": 0, "label": "No se produce", "desc": "" }, { "val": 1, "label": "Co-creación Básica", "desc": "Se invita a la persona a seleccionar imagenes o figuras para ayudarla a expresarse" }, { "val": 2, "label": "Co-creación satisfactoria", "desc": "Se invita a alguna persona a crear un collage o moodboard, para que pueda comunicar aspiraciones, frustraciones, etc" }, { "val": 3, "label": "Co-creción Avanzada", "desc": "Se invita a más de un integrante de la comunidad u organización a crear collage o moodboard para poder identificar el reto o problema. (utiliza pops its, imagenes, fibras)" } ] },
+            { "id": 6, "category": "LLUVIA DE IDEAS", "title": "PROCESO DE GENERACIÓN DE IDEAS", "options": [ { "val": 0, "label": "No se realizó", "desc": "" }, { "val": 1, "label": "Básico", "desc": "Las ideas surgen del equipo de diseño, sin participación de otros actores. Poca variedad." }, { "val": 2, "label": "Satisfactorio", "desc": "Participan algunos actores clave. Se generan ideas variadas pero similares a soluciones existentes." }, { "val": 3, "label": "Excelente", "desc": "Participan usuarios y actores clave. Gran cantidad y diversidad de ideas (disruptivas). Se construye sobre las ideas de otros." } ] },
+            { "id": 7, "category": "SOBRE LOS PROTOTIPOS", "title": "CREACIÓN DE PROTOTIPOS TEMPRANOS", "options": [ { "val": 0, "label": "No se produce", "desc": "" }, { "val": 1, "label": "Inicial", "desc": "Hay esquemas iniciales, dibujos de posibles soluciones al problema" }, { "val": 2, "label": "Adecuado", "desc": "Durante el proceso de escucha se realizan prototipos con materiales simples (papel, lapiz, cartón, maderitas, temperas)" }, { "val": 3, "label": "Avanzado", "desc": "Mientras se escucha se van pensando ideas y realizando prototipos complejos, en escala o digitales." } ] },
+            { "id": 8, "category": "CAPACIDAD DE SINTESIS", "title": "SÍNTESIS DE INFORMACIÓN", "options": [ { "val": 0, "label": "Ineficaz", "desc": "" }, { "val": 1, "label": "Inicial", "desc": "La información queda dispersa, no se traduce en patrones claros o \"insights\"." }, { "val": 2, "label": "Adecuado", "desc": "Se identifican algunos patrones y oportunidades de diseño básicos." }, { "val": 3, "label": "Excelente", "desc": "Se traducen historias complejas en oportunidades de diseño claras y estratégicas. Se definen \"insights\" potentes." } ] },
+            { "id": 9, "category": "ACTIVADORES DE INNOVACIÒN", "title": "INICIO DE PROCESOS", "options": [ { "val": 0, "label": "Nulo", "desc": "" }, { "val": 1, "label": "Inicial", "desc": "Se sigue el proceso de forma mecánica sin cuestionar ni proponer más allá de lo pedido." }, { "val": 2, "label": "Satisfactorio", "desc": "Se aplican herramientas de innovación para buscar soluciones nuevas." }, { "val": 3, "label": "Avanzado", "desc": "Se respira una cultura de innovación. Se buscan soluciones radicales y sistémicas desde el inicio." } ] },
+            { "id": 10, "category": "IDENTIFICANDO EL EQUIPO", "title": "ROLES DEL EQUIPO", "options": [ { "val": 0, "label": "No se identifican", "desc": "" }, { "val": 1, "label": "Se identifica alguno", "desc": "" }, { "val": 2, "label": "Se identifican la mayoría", "desc": "" }, { "val": 3, "label": "Se identifican todos", "desc": "Activadores/Buscadores/Creadores/Desarrolladores/Ejecutores/Facilitadores" } ] },
+            { "id": 11, "category": "EMPATIA", "title": "RECONOCER Y TRADUCIR EXPERIENCIAS", "options": [ { "val": 0, "label": "No se identifica", "desc": "" }, { "val": 1, "label": "Empatía baja o simbólica", "desc": "" }, { "val": 2, "label": "Empatía moderada", "desc": "Con alguna práctica" }, { "val": 3, "label": "Empatía profunda", "desc": "Con práctica concreta y validada por la comunidad" } ] },
+            { "id": 12, "category": "COMPRENSIÒN DEL USUARIO", "title": "PROFUNDIDAD DE INVESTIGACIÓN", "options": [ { "val": 0, "label": "Sin comprensión", "desc": "Sin contacto con las personas" }, { "val": 1, "label": "Nivel Bajo", "desc": "Contacto mínimo, entrevistas o encuestas puntuales." }, { "val": 2, "label": "Nivel adecuado", "desc": "Observación y entrevistas profundas" }, { "val": 3, "label": "Nivel Avanzado", "desc": "Investigación inmersiva y sistemática" } ] },
+            { "id": 13, "category": "IDENTIFICANDO EL PROBLEMA", "title": "DEFINICIÒN DEL RETO", "options": [ { "val": 0, "label": "Sin Definir", "desc": "No hay reto definido" }, { "val": 1, "label": "Básico", "desc": "El reto está formulado, pero de manera amplia y sin foco en las personas, y posibilidades de acción escasas." }, { "val": 2, "label": "Aceptable", "desc": "El reto está formulado con claridad, con enfoque en las personas pero demasiado amplio. La formulación del reto lo hace el equipo o la organización." }, { "val": 3, "label": "Excelente", "desc": "El reto esta claro, centrado en las personas , accionable y enmarcado en una pregunta potente, formulada y validada por todos los actores clave." } ] },
+            { "id": 14, "category": "INNOVACIÒN EN EL DISEÑO", "title": "ORIGINALIDAD (EXPERTOS)", "options": [ { "val": 0, "label": "No aporta nada nuevo", "desc": "" }, { "val": 1, "label": "Leve Mejora", "desc": "Leve Mejora estética o funcional" }, { "val": 2, "label": "Mejora relevante", "desc": "Nuevo enfoque dentro de un campo ya conocido" }, { "val": 3, "label": "Radicalmente original", "desc": "Idea radicalmente nueva sin antecedentes directos" } ] },
+            { "id": 15, "category": "INNOVACIÒN EN EL DISEÑO", "title": "ORIGINALIDAD (USUARIOS)", "options": [ { "val": 0, "label": "No aporta nada nuevo", "desc": "" }, { "val": 1, "label": "Leve Mejora", "desc": "Perciben cambios menores." }, { "val": 2, "label": "Mejora relevante", "desc": "Reconocen una solución distinta a lo habitual." }, { "val": 3, "label": "Radicalmente original", "desc": "Perciben una solución única y sorprendente." } ] },
+            { "id": 16, "category": "INNOVACIÒN EN EL DISEÑO", "title": "COMPARACIÒN FUNCIONAL", "options": [ { "val": 0, "label": "No aporta nada nuevo", "desc": "" }, { "val": 1, "label": "Ajustes menores", "desc": "Ajustes menores a lo existente" }, { "val": 2, "label": "Mejoras visibles", "desc": "Redefine prácticas o procesos" }, { "val": 3, "label": "Radicalmente superior", "desc": "Rompe completamente con el modelo previo" } ] },
+            { "id": 17, "category": "INNOVACIÒN EN EL DISEÑO", "title": "DISRUPCIÒN TECNOLÒGICA/SOCIAL", "options": [ { "val": 0, "label": "No aporta nada nuevo", "desc": "" }, { "val": 1, "label": "Ajustes menores", "desc": "" }, { "val": 2, "label": "Mejoras visibles", "desc": "Cambio significativo en la tecnología o uso social." }, { "val": 3, "label": "Radicalmente superior", "desc": "Crea un nuevo paradigma tecnológico o social." } ] },
+            { "id": 18, "category": "VENTAJAS ORGANIZACION", "title": "EFICIENCIA Y AUTONOMÍA", "options": [ { "val": 0, "label": "Sin aporte", "desc": "" }, { "val": 1, "label": "Ajustes menores", "desc": "Ajustes menores a lo existente" }, { "val": 2, "label": "Impacto visible", "desc": "Mejora procesos o reduce costos notablemente." }, { "val": 3, "label": "Impacto concreto", "desc": "Impacto concreto y relevante en la eficiencia y autonomía." } ] },
+            { "id": 19, "category": "VALOR PARA LA SOCIEDAD", "title": "CALIDAD DE VIDA", "options": [ { "val": 0, "label": "Sin Impacto", "desc": "" }, { "val": 1, "label": "Ajustes menores", "desc": "Beneficio limitado a pocos usuarios" }, { "val": 2, "label": "Impacto visible", "desc": "Aporta ventajas claras a una comunidad" }, { "val": 3, "label": "Impacto concreto", "desc": "Cambia significativamente la vida de una sociedad (Accesibilidad, Inclusión)" } ] },
+            { "id": 20, "category": "VALOR PARA LA SOCIEDAD", "title": "IMPACTO AMBIENTAL", "options": [ { "val": 0, "label": "Sin aporte", "desc": "" }, { "val": 1, "label": "Inicial", "desc": "Cumple normativas básicas." }, { "val": 2, "label": "Integrado", "desc": "Incorpora materiales o procesos sustentables." }, { "val": 3, "label": "Sustentable", "desc": "Regenerativo o circular. Impacto positivo neto." } ] },
+            { "id": 21, "category": "VALOR PARA LA SOCIEDAD", "title": "IMPACTO CULTURAL", "options": [ { "val": 0, "label": "Sin aporte", "desc": "" }, { "val": 1, "label": "Superficial", "desc": "Considera aspectos culturales básicos." }, { "val": 2, "label": "Integrado", "desc": "Respeta y potencia la identidad cultural." }, { "val": 3, "label": "Transformador", "desc": "Fortalece profundamente la identidad y el tejido social." } ] },
+            { "id": 22, "category": "CO-DISEÑO (CREAR)", "title": "DIVERSIDAD DE ACTORES", "options": [ { "val": 0, "label": "Sin co-diseño", "desc": "Solo el equipo técnico participa" }, { "val": 1, "label": "Mínimo", "desc": "Se consulta a un grupo reducido o sin incidencia real en desiciones" }, { "val": 2, "label": "Adecuado", "desc": "Participan en la definición del problema y posibles soluciones" }, { "val": 3, "label": "Co-diseño participativo", "desc": "La comunidad participa en todas las fases ( problema, idea, prototipo, creación y evaluación)" } ] },
+            { "id": 23, "category": "MÈTODOS DE PARTICIPACIÒN", "title": "HERRAMIENTAS UTILIZADAS", "options": [ { "val": 0, "label": "No se utilizan", "desc": "" }, { "val": 1, "label": "Básico", "desc": "Herramientas básicas (encuesta cerrada) y algunas dinámicas de consulta ( focus, entrevistas)" }, { "val": 2, "label": "Adecuado", "desc": "Talleres participativos con devolución" }, { "val": 3, "label": "Participativo ideal", "desc": "Método participativo colaborativo en todas las etapas" } ] },
+            { "id": 24, "category": "INDICE DE PARTICIPACIÒN (IPD)", "title": "NIVEL DE INVOLUCRAMIENTO", "options": [ { "val": 0, "label": "No Participa", "desc": "" }, { "val": 1, "label": "Participación simbólica", "desc": "" }, { "val": 2, "label": "Participación en algunas etapas.", "desc": "" }, { "val": 3, "label": "Co-diseño transformador", "desc": "Con retroalimentación continua" } ] },
+            { "id": 25, "category": "RECONOCIMIENTO DIVERSIDAD", "title": "INCLUSIÓN Y VULNERABILIDAD", "options": [ { "val": 0, "label": "Sin consideración", "desc": "" }, { "val": 1, "label": "Reconoce algunos aspectos", "desc": "" }, { "val": 2, "label": "Integra diversidad y vulnerabilidad.", "desc": "Integra de manera amplia la diversidad" }, { "val": 3, "label": "Plenamente inclusivo", "desc": "El diseño es plenamente inclusivo y adaptado a múltiples realidades" } ] },
+            { "id": 26, "category": "TRADUCCIÒN DE LA EMPATÌA", "title": "DECISIONES DE DISEÑO", "options": [ { "val": 0, "label": "Sin empatía", "desc": "No se traduce en el diseño" }, { "val": 1, "label": "Empatía simbólica", "desc": "Inspiración muy parcial, y se refleja en algunos aspectos" }, { "val": 2, "label": "Empatía satisfactoria", "desc": "Se refleja en la mayoría de las desiciones" }, { "val": 3, "label": "Diseño empático", "desc": "El diseño responde por completo a lo comprendido empaticamente" } ] },
+            { "id": 27, "category": "EVALUANDO LA FACTIBILIDAD", "title": "TÉCNICA Y OPERATIVA", "options": [ { "val": 0, "label": "No Factible", "desc": "" }, { "val": 1, "label": "Factibilidad Baja", "desc": "" }, { "val": 2, "label": "Factibilidad Media", "desc": "" }, { "val": 3, "label": "Factibilidad Alta", "desc": "" } ] },
+            { "id": 28, "category": "EVALUANDO LA VIABILIDAD", "title": "VIABILIDAD GENERAL", "options": [ { "val": 0, "label": "No Viable", "desc": "" }, { "val": 1, "label": "Viabilidad Baja", "desc": "" }, { "val": 2, "label": "Viabilidad Media", "desc": "" }, { "val": 3, "label": "Viabilidad Alta", "desc": "" } ] },
+            { "id": 29, "category": "EVALUANDO LA VIABILIDAD", "title": "VIABILIDAD ECONOMICA", "options": [ { "val": 0, "label": "Sin viabilidad", "desc": "" }, { "val": 1, "label": "Nivel Bajo", "desc": "" }, { "val": 2, "label": "Nivel Medio", "desc": "" }, { "val": 3, "label": "Nivel Alta", "desc": "" } ] },
+            { "id": 30, "category": "EVALUANDO LA VIABILIDAD", "title": "VIABILIDAD SOCIAL", "options": [ { "val": 0, "label": "Sin viabilidad", "desc": "" }, { "val": 1, "label": "Nivel bajo", "desc": "" }, { "val": 2, "label": "Nivel Medio", "desc": "" }, { "val": 3, "label": "Nivel Alta", "desc": "" } ] },
+            { "id": 31, "category": "EVALUANDO LA VIABILIDAD", "title": "VIABILIDAD ORGANIZACIONAL", "options": [ { "val": 0, "label": "Sin viabilidad", "desc": "" }, { "val": 1, "label": "Nivel bajo", "desc": "" }, { "val": 2, "label": "Nivel Medio", "desc": "" }, { "val": 3, "label": "Nivel Alta", "desc": "" } ] },
+            { "id": 32, "category": "ENFOQUE SOCIAL", "title": "DISEÑO DE RELACIONES", "options": [ { "val": 0, "label": "Diseña producto/servicio", "desc": "" }, { "val": 1, "label": "El Diseño incluye alguna colaboración", "desc": "" }, { "val": 2, "label": "Se crea sistema de relaciones", "desc": "" }, { "val": 3, "label": "Se crea un ecosistema", "desc": "El diseño crea una nueva forma de vida, un nuevo ecosistema." } ] },
+            { "id": 33, "category": "TIPO DE IMPACTO", "title": "ECONÒMICO, SOCIAL Y AMBIENTAL", "options": [ { "val": 0, "label": "Sin impacto", "desc": "" }, { "val": 1, "label": "Se reconoce algún impacto positivo", "desc": "" }, { "val": 2, "label": "Doble impacto positivo", "desc": "" }, { "val": 3, "label": "Triple impacto positivo", "desc": "" } ] },
+            { "id": 34, "category": "ASPECTO SUSTENTABLE", "title": "INTEGRACIÓN SUSTENTABILIDAD", "options": [ { "val": 0, "label": "Nulo", "desc": "" }, { "val": 1, "label": "Inicial", "desc": "" }, { "val": 2, "label": "Parcial", "desc": "" }, { "val": 3, "label": "Integral", "desc": "" } ] },
+            { "id": 35, "category": "LA DESEABILIDAD", "title": "ACEPTACIÓN DE USUARIOS", "options": [ { "val": 0, "label": "Nulo", "desc": "El diseño no resulta atractivo ni pertinente." }, { "val": 1, "label": "Deseabilidad Baja", "desc": "Los usuarios muestran curiosidad pero sin entusiasmo." }, { "val": 2, "label": "Deseabilidad Media", "desc": "Cumple expectativas funcionales y emocionales. Uso voluntario." }, { "val": 3, "label": "Deseabilida Alta", "desc": "Los usuarios se identifican plenamente. Alta satisfacción y recomendación." } ] },
+            { "id": 36, "category": "ACTITUD DEL EQUIPO", "title": "Tolerancia a la ambigüedad", "options": [ { "val": 0, "label": "Nula", "desc": "" }, { "val": 1, "label": "Baja", "desc": "" }, { "val": 2, "label": "Media", "desc": "" }, { "val": 3, "label": "Alta", "desc": "" } ] },
+            { "id": 37, "category": "ACTITUD DEL EQUIPO", "title": "Compromiso con la estética", "options": [ { "val": 0, "label": "Nula", "desc": "" }, { "val": 1, "label": "Baja", "desc": "" }, { "val": 2, "label": "Media", "desc": "" }, { "val": 3, "label": "Alta", "desc": "" } ] },
+            { "id": 38, "category": "ACTITUD DEL EQUIPO", "title": "Pensamiento sistémico", "options": [ { "val": 0, "label": "Nula", "desc": "" }, { "val": 1, "label": "Baja", "desc": "" }, { "val": 2, "label": "Media", "desc": "" }, { "val": 3, "label": "Alta", "desc": "" } ] },
+            { "id": 39, "category": "ACTITUD DEL EQUIPO", "title": "Conectar múltiples perspectivas", "options": [ { "val": 0, "label": "Nula", "desc": "" }, { "val": 1, "label": "Baja", "desc": "" }, { "val": 2, "label": "Media", "desc": "" }, { "val": 3, "label": "Alta", "desc": "" } ] },
+            { "id": 40, "category": "ACTITUD DEL EQUIPO", "title": "Creatividad", "options": [ { "val": 0, "label": "Nula", "desc": "" }, { "val": 1, "label": "Baja", "desc": "" }, { "val": 2, "label": "Media", "desc": "" }, { "val": 3, "label": "Alta", "desc": "" } ] },
+            { "id": 41, "category": "ACTITUD DEL EQUIPO", "title": "Empatía", "options": [ { "val": 0, "label": "Nula", "desc": "" }, { "val": 1, "label": "Baja", "desc": "" }, { "val": 2, "label": "Media", "desc": "" }, { "val": 3, "label": "Alta", "desc": "" } ] }
+        ];
+
+        const scores = {};
+        let radarChart;
+
+        function init() {
+            const container = document.getElementById('app-container');
+            container.innerHTML = '';
+            
+            data.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = "card";
+                
+                // Color Code por Categoría
+                const catColor = getCategoryColor(item.category);
+                
+                card.innerHTML = `
+                    <div class="card-accent" style="background-color: ${catColor}"></div>
+                    
+                    <div class="px-6 py-4 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
+                        <span class="text-[10px] font-extrabold tracking-widest uppercase text-slate-400 font-display">${item.category}</span>
+                        <span class="text-xs font-mono font-bold text-slate-300">#${item.id}</span>
+                    </div>
+                    
+                    <div class="p-6">
+                        <h3 class="text-lg font-bold text-slate-800 mb-6 font-display leading-tight pr-4">${item.title}</h3>
+                        
+                        <div class="flex gap-2 mb-6">
+                            <button class="tab-btn active" onclick="switchTab(this, 'eval-${index}')">Evaluación</button>
+                            <button class="tab-btn" onclick="switchTab(this, 'guide-${index}')">Guía de Niveles</button>
+                        </div>
+
+                        <div id="eval-${index}" class="tab-content block grid grid-cols-1 gap-2">
+                            ${item.options.map(opt => `
+                                <button class="option-btn p-3 rounded-xl flex items-center gap-4 text-left group" onclick="selectOption(${item.id}, ${opt.val}, this)">
+                                    <div class="indicator w-8 h-8 rounded-full border-2 border-slate-200 flex items-center justify-center font-bold text-sm text-slate-400 shrink-0 transition-transform">
+                                        ${opt.val}
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-bold text-sm text-slate-700 group-hover:text-blue-600 transition-colors">${opt.label}</div>
+                                    </div>
+                                </button>
+                            `).join('')}
+                        </div>
+
+                        <div id="guide-${index}" class="tab-content hidden h-56 overflow-y-auto custom-scroll pr-2">
+                            <div class="space-y-3">
+                                ${item.options.map(opt => `
+                                    <div class="flex gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100">
+                                        <div class="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 shrink-0">${opt.val}</div>
+                                        <div>
+                                            <div class="text-xs font-bold text-slate-800 mb-0.5">${opt.label}</div>
+                                            <div class="text-xs text-slate-500 leading-relaxed">${opt.desc || "Sin descripción detallada."}</div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+                scores[item.id] = 0;
+            });
+            updateChart();
+        }
+
+        window.switchTab = function(btn, contentId) {
+            const cardBody = btn.closest('.p-6');
+            cardBody.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            cardBody.querySelectorAll('.tab-content').forEach(c => {
+                c.classList.remove('block');
+                c.classList.add('hidden');
+            });
+            const content = document.getElementById(contentId);
+            content.classList.remove('hidden');
+            content.classList.add('block');
+        }
+
+        window.selectOption = function(id, val, btn) {
+            scores[id] = val;
+            const container = btn.parentElement;
+            container.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            updateStats();
+        }
+
+        function updateStats() {
+            const total = Object.values(scores).reduce((a, b) => a + b, 0);
+            const filled = Object.values(scores).filter(v => v > 0).length;
+            const percent = Math.round((filled / data.length) * 100);
+
+            animateValue("total-score", parseInt(document.getElementById('total-score').innerText), total, 300);
+            document.getElementById('progress-text').innerText = percent + '%';
+            
+            updateChart();
+        }
+
+        function animateValue(id, start, end, duration) {
+            if (start === end) return;
+            const range = end - start;
+            let current = start;
+            const increment = end > start ? 1 : -1;
+            const stepTime = Math.abs(Math.floor(duration / range));
+            const obj = document.getElementById(id);
+            const timer = setInterval(function() {
+                current += increment;
+                obj.innerHTML = current;
+                if (current == end) clearInterval(timer);
+            }, stepTime);
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            const cats = {};
+            data.forEach(d => {
+                // Simplificar nombres de categoría para el gráfico
+                let label = d.category.split(' ')[0];
+                if(label.length < 4) label = d.category.split(' ').slice(0,2).join(' ');
+                
+                // Mapeo manual para nombres más limpios
+                if(d.category.includes("MÈTODOS")) label = "Métodos";
+                if(d.category.includes("CONOCER")) label = "Investigación";
+                if(d.category.includes("IDENTIFICAR")) label = "Actores";
+                if(d.category.includes("CO-DISEÑO")) label = "Co-Diseño";
+                if(d.category.includes("LLUVIA")) label = "Ideación";
+                if(d.category.includes("PROTOTIPOS")) label = "Prototipos";
+                if(d.category.includes("SÍNTESIS")) label = "Síntesis";
+                if(d.category.includes("INNOVACIÒN")) label = "Innovación";
+                if(d.category.includes("EQUIPO") || d.category.includes("ACTITUD")) label = "Equipo";
+                if(d.category.includes("EMPATIA") || d.category.includes("USUARIO")) label = "Usuario";
+                if(d.category.includes("VIABILIDAD")) label = "Viabilidad";
+                if(d.category.includes("VALOR")) label = "Valor Social";
+
+                if(!cats[label]) cats[label] = {sum:0, count:0};
+                cats[label].sum += scores[d.id];
+                cats[label].count++;
+            });
+
+            const labels = Object.keys(cats);
+            const values = labels.map(l => (cats[l].sum / cats[l].count).toFixed(1));
+
+            if(radarChart) radarChart.destroy();
+
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Nivel',
+                        data: values,
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: '#3b82f6',
+                        pointBackgroundColor: '#2563eb',
+                        pointBorderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e2e8f0' },
+                            grid: { color: '#f1f5f9' },
+                            suggestedMin: 0, suggestedMax: 3,
+                            ticks: { display: false, stepSize: 1 },
+                            pointLabels: {
+                                font: { size: 10, family: 'Inter', weight: '600' },
+                                color: '#64748b'
+                            }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function getCategoryColor(cat) {
+            const c = cat.toUpperCase();
+            if(c.includes("MÈTODOS") || c.includes("RECOLECCION")) return "#3b82f6"; // Blue
+            if(c.includes("EMPATIA") || c.includes("USUARIO") || c.includes("CONOCER")) return "#ec4899"; // Pink
+            if(c.includes("ACTITUD") || c.includes("EQUIPO")) return "#f59e0b"; // Amber
+            if(c.includes("VIABILIDAD") || c.includes("FACTIBILIDAD") || c.includes("VALOR")) return "#10b981"; // Emerald
+            if(c.includes("INNOVACIÒN") || c.includes("NOVEDAD") || c.includes("IDEACIÓN")) return "#8b5cf6"; // Violet
+            if(c.includes("CO-DISEÑO")) return "#ef4444"; // Red
+            return "#64748b"; // Slate Default
+        }
+
+        function resetApp() {
+            if(confirm('¿Reiniciar evaluación?')) {
+                init();
+                updateStats();
+                window.scrollTo(0,0);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
